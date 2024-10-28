@@ -6,7 +6,11 @@ authors = ["Pemmaraju Venkat Akash Varun <pemmaraju.v@northeastern.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.12"
+streamlit = "^1.39.0"
+requests = "^2.32.3"
+streamlit-pdf-viewer = "^0.0.19"
+python-dotenv = "^1.0.1"
 
 
 [build-system]
