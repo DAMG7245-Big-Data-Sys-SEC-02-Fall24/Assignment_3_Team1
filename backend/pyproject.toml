@@ -6,8 +6,10 @@ authors = ["Pemmaraju Venkat Akash Varun <pemmaraju.v@northeastern.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
-fastapi = "^0.115.3"
+python = "^3.12"
+fastapi = "^0.115.4"
+boto3 = "^1.35.49"
+pydantic-settings = "^2.6.0"
 
 
 [build-system]
