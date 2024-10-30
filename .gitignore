@@ -119,9 +119,10 @@ dmypy.json
 *.pid
 
 # Docker specific
-Dockerfile
-docker-compose.yml
-.dockerignore
 docker-compose.override.yml
 docker-compose.prod.yml
 docker-compose.dev.yml
+
+
+#Airflow specific
+variables.json
