@@ -31,9 +31,17 @@ docx = "^0.2.4"
 pypdf2 = "^3.0.1"
 pandas = "^2.2.3"
 python-docx = "^1.1.2"
+llama-index = "^0.11.17"
+llama-index-indices-managed-llama-cloud = "^0.3.1"
+docx2txt = "^0.8"
+xhtml2pdf = "^0.2.14"
+markdown = "^3.7"
+e2b_code_interpreter = "0.0.11b38"
 nest-asyncio = "^1.6.0"
-llama-index = "^0.11.20"
 jupyter = "^1.1.1"
+aiostream = "^0.6.4"
+pymilvus = "^2.4.9"
+
 
 
 [build-system]
