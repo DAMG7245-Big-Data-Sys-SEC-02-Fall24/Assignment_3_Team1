@@ -4,6 +4,10 @@ from fastapi.logger import logger
 from snowflake.connector import ProgrammingError
 
 from app.services.snowflake import SnowflakeConnection
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 
 class PublicationService:

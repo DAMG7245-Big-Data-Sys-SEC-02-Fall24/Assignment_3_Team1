@@ -1,13 +1,13 @@
 import os
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+#from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
 # Load environment variables from .env file
 load_dotenv()
 
-class Settings(BaseSettings):
+class Settings():
     # JWT settings
     JWT_PRIVATE_KEY_PATH: str = os.getenv("JWT_PRIVATE_KEY_PATH")
     JWT_PUBLIC_KEY_PATH: str = os.getenv("JWT_PUBLIC_KEY_PATH")
