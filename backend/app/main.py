@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.utils import get_openapi
 from sqlalchemy.orm import Session
-from app.routes import auth_routes, summary_routes, rag, publications_routes
+from app.routes import auth_routes, summary_routes, publications_routes
 from app.services.auth_service import verify_token
 from app.services.database_service import get_db
 
