@@ -1,10 +1,13 @@
-
+# app.py
 import streamlit as st
 from services.session_store import session_store
 from services.authentication import auth
+import logging
 import os
 from dotenv import load_dotenv
-import logging
+from app_pages.home_page import home_page
+from app_pages.documents_page import documents_page, pdf_viewer_page
+from app_pages.document_actions_page import document_actions_page
 
 # Load environment variables
 load_dotenv()
@@ -18,10 +21,18 @@ logging.basicConfig(
     ]
 )
 
-# Session state defaults related to authentication
+# Backend API base URL
+API_BASE_URL = os.getenv("API_BASE_URL")
+
+# Session state defaults
 session_defaults = {
     'display_login': True,
     'display_register': False,
+    'current_page': 'Home',
+    'selected_pdf': None,
+    'selected_title': None,
+    'selected_document_id': None  # Added to track selected document
+
 }
 
 def initialize_session_state():
@@ -31,23 +42,14 @@ def initialize_session_state():
 
 def clear_session_storage():
     logging.info("Clearing session storage")
-    for key, default in session_defaults.items():
-        st.session_state[key] = default
-
-def main():
-    # Initialize session state
-    logging.info("Initializing session state")
+    # Clear all session state
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    # Reinitialize with defaults
     initialize_session_state()
 
-    # Authentication handling
-    if not session_store.is_authenticated():
-        logging.info("User not authenticated, showing login page")
-        login_page()
-    else:
-        logging.info("User authenticated")
-        authenticated_page()
-
 def login_page():
+    # Added UI for the application title and features
     st.markdown(
         """
         <style>
@@ -70,6 +72,7 @@ def login_page():
             color: #1A5276;
         }
         .features ul {
+            text-align: center;
             list-style-type: none;
             padding-left: 0;
         }
@@ -109,69 +112,107 @@ def login_page():
 
 def display_login_form():
     st.subheader("Login")
-    logging.info("Displaying login form")
-    with st.form("login_form"):
-        email = st.text_input("Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_password")
+    
+    with st.form("login_form", clear_on_submit=True):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
         submit = st.form_submit_button("Login")
 
-    if submit:
-        try:
-            logging.info(f"Attempting login for user: {email}")
-            auth.login(email, password)
-            st.success("Logged in successfully!")
-            st.experimental_rerun()
-        except Exception as e:
-            logging.error(f"Login failed for user {email}: {e}")
-            st.error(f"Login failed: {e}")
+        if submit:
+            if not email or not password:
+                st.error("Please enter both email and password.")
+                return
+                
+            try:
+                auth.login(email, password)
+                st.success("Logged in successfully!")
+                st.session_state['current_page'] = 'Home'  # Set to Home after login
+                st.rerun()
+            except Exception as e:
+                st.error(f"Login failed: {str(e)}")
 
-    st.write("Don't have an account?")
     if st.button("Register"):
         show_register_form()
 
 def display_register_form():
     st.subheader("Register")
-    logging.info("Displaying register form")
-    with st.form("register_form"):
-        username = st.text_input("Username", key="register_username")
-        email = st.text_input("Email", key="register_email")
-        password = st.text_input("Password", type="password", key="register_password")
+    with st.form("register_form", clear_on_submit=True):
+        username = st.text_input("Username")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
         submit = st.form_submit_button("Register")
 
-    if submit:
-        try:
-            logging.info(f"Attempting registration for user: {email}")
-            auth.register(username, email, password)
-            st.success("Registered successfully! Please log in.")
-            show_login_form()
-        except Exception as e:
-            logging.error(f"Registration failed for user {email}: {e}")
-            st.error(f"Registration failed: {e}")
+        if submit:
+            if not username or not email or not password:
+                st.error("Please fill in all fields.")
+                return
+                
+            try:
+                auth.register(username, email, password)
+                st.success("Registered successfully! Please log in.")
+                show_login_form()
+            except Exception as e:
+                st.error(f"Registration failed: {str(e)}")
 
-    st.write("Already have an account?")
     if st.button("Back to Login"):
         show_login_form()
 
 def show_register_form():
-    logging.info("Switching to register form")
     session_store.set_value('display_login', False)
     session_store.set_value('display_register', True)
-    st.experimental_rerun()
+    st.rerun()
 
 def show_login_form():
-    logging.info("Switching to login form")
     session_store.set_value('display_login', True)
     session_store.set_value('display_register', False)
-    st.experimental_rerun()
+    st.rerun()
 
-def authenticated_page():
-    st.title("Welcome!")
-    st.write("You are successfully authenticated.")
-    if st.button("Logout"):
-        logging.info("Logging out user")
-        auth.logout()
-        clear_session_storage()
-        st.experimental_rerun()
+def main():
+    initialize_session_state()
+
+    if not session_store.is_authenticated():
+        login_page()
+        return
+
+    # Sidebar navigation
+    st.sidebar.title("Navigation")
+    pages = {
+        "Home": home_page,
+        "Documents": documents_page,
+        "Document Actions": document_actions_page
+    }
+
+    current_page = st.session_state['current_page']
+
+    # Handle PDF Viewer as a special case
+    if current_page == "PDF Viewer":
+        pdf_viewer_page()
+    else:
+        if current_page in pages:
+            default_index = list(pages.keys()).index(current_page)
+        else:
+            default_index = 0  # Default to Home if current_page is unrecognized
+
+        selected_page = st.sidebar.radio("Go to", list(pages.keys()), index=default_index)
+
+        if selected_page != current_page:
+            st.session_state['current_page'] = selected_page
+            st.rerun()
+
+        pages[selected_page]()
+
+    # Logout button in sidebar
+    st.sidebar.markdown("---")
+    if st.sidebar.button("Logout"):
+        try:
+            logging.info("Logging out user")
+            auth.logout()
+            clear_session_storage()
+            st.success("Logged out successfully.")
+            st.experimental_rerun()
+        except Exception as e:
+            logging.error(f"Error during logout: {e}")
+            st.sidebar.error("Error during logout. Please try again.")
 
 if __name__ == "__main__":
     main()
