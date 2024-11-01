@@ -8,7 +8,7 @@ package-mode = false
 
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 fastapi = "^0.115.0"
 uvicorn = "^0.31.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
@@ -41,6 +41,14 @@ nest-asyncio = "^1.6.0"
 jupyter = "^1.1.1"
 aiostream = "^0.6.4"
 pymilvus = "^2.4.9"
+boto3 = "^1.35.52"
+snowflake-connector-python = "^3.12.3"
+llama-index-vector-stores-milvus = "^0.2.7"
+pinecone = {version = "5.1.0", extras = ["grpc"]}
+llama-index-vector-stores-pinecone = "^0.2.1"
+llama-index-readers-file = "^0.2.2"
+setuptools = "^75.3.0"
+pyperclip = "^1.9.0"
 
 
 

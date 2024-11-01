@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     MONGO_URI: str = os.getenv("MONGO_URI")
     GCP_JSON: str = os.getenv("GCP_JSON")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    PINECONE_API_KEY: str = os.getenv("PINECONES_API_KEY")
 
     # Read RSA keys from files
     @property

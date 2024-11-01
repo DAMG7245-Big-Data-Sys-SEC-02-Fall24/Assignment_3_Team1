@@ -31,7 +31,8 @@ app.include_router(summary_routes.router,tags=["Summary"])
 # app.include_router(rag.router, prefix="/rag", tags=["Rag"])
 
 app.include_router(publications_routes.router, prefix="", tags=["Publications"])
-
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")
 # Root endpoint
 @app.get("/")
 def read_root():
