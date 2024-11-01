@@ -7,10 +7,18 @@ from sqlalchemy.orm import Session
 from app.routes import auth_routes, summary_routes, rag, publications_routes
 from app.services.auth_service import verify_token
 from app.services.database_service import get_db
-
+from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development, restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define OAuth2PasswordBearer for JWT authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

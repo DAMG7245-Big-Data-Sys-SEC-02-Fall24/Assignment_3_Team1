@@ -1,6 +1,8 @@
 import os
 import snowflake.connector
 from snowflake.connector import ProgrammingError
+from dotenv import load_dotenv
+load_dotenv()
 
 class SnowflakeConnection:
     _instance = None

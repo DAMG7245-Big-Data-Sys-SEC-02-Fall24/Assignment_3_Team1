@@ -42,7 +42,7 @@ jupyter = "^1.1.1"
 aiostream = "^0.6.4"
 pymilvus = "^2.4.9"
 boto3 = "^1.35.52"
-
+snowflake-connector-python = "^3.12.3"
 
 
 [build-system]

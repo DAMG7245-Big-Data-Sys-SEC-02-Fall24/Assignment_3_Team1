@@ -20,12 +20,12 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi --no-cache
 
-
 # Copy the application code
-COPY app ./app
+COPY . .
 
-# Expose the port that the app runs on
-EXPOSE 8000
+# Expose the port that Streamlit runs on
+EXPOSE 8501
 
 # Set the entrypoint command
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
