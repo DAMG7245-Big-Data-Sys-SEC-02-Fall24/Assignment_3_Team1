@@ -70,8 +70,22 @@ def get_chat_history_file(document_id: str) -> str:
     """
     Returns the file path for a given document ID's chat history.
     """
-    filename = f"{document_id}.json"
-    return os.path.join(CHAT_HISTORY_DIR, filename)
+    cwd = os.getcwd()
+    directory = cwd + "/chat_histories/assignment3/pdfs/"
+    js = cwd + f"/chat_histories/{document_id}_chat.json"
+    history_path = os.path.join(directory, f"{document_id}_chat.json")
+    #    if nested directory is not present, create it
+    if not os.path.exists(directory):
+        logging.info(f"Creating directory: {directory}")
+        os.makedirs(directory)
+    # if json file does not exist, create it
+    if not os.path.exists(js):
+        logging.info(f"Creating chat history file: {js}")
+        with open(js, "w") as f:
+            json.dump({}, f)
+
+
+    return js
 
 
 def load_chat_history(document_id: str) -> List[dict]:

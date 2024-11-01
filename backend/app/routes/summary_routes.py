@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Body
 from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from fastapi import FastAPI, HTTPException, Request, status
@@ -10,12 +11,13 @@ from typing import List, Dict
 
 from app.routes.helpers import ChatResponse, ChatRequest, load_chat_history, setup_chat_histories, DUMMY_IMAGE_URL, \
     save_chat_history, ChatHistoryResponse
-from app.services import rag_service
+from app.services import d_rag_service
 from app.services.database_service import get_db
 from app.services.auth_service import verify_token  # Assuming token validation is handled in auth_service
-from app.services.document_service import DocumentService  # Import the service layer
 import logging
 from fastapi.staticfiles import StaticFiles
+
+from app.services.rag_service import summarize_document, query_chat
 
 # Initialize the router for document routes
 router = APIRouter()
@@ -25,9 +27,36 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
+class SummaryRequest(BaseModel):
+    document_name: str
 
 @router.post("/summarize", tags=["Summary"])
+async def summarize_endpoint(
+        summary_request: SummaryRequest,
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db)
+):
+    """
+    Endpoint to summarize a document.
+    """
+    try:
+        # Verify the JWT token
+        user_email = verify_token(token)
+        if not user_email:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+        # Extract summary parameters from the request body
+        document_name = summary_request.document_name
+        response = summarize_document(document_name)
+        logging.info(f"Summary response: {response}")
+        logging.info("----------------------")
+        return {"markdown": response}
+
+    except Exception as e:
+        logging.error(f"An error occurred during the summary process: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while summarizing the document: {str(e)}")
+
+@router.post("/report", tags=["Summary"])
 async def summarize_endpoint(
         publication_id: int,
         summary_request: Dict[str, str] = Body(...),
@@ -45,28 +74,12 @@ async def summarize_endpoint(
 
         # Extract summary parameters from the request body
         document_name = summary_request.get("document_name")
-        document_id = summary_request.get("document_id")
+        response = summarize_document(document_name)
+        return {"markdown": response}
 
-        image_url = "http://localhost:8000/static/images/sample.jpg"
-
-        markdown_content = f"""
-        # Welcome to FastAPI Markdown
-
-        This is a sample Markdown content served from FastAPI.
-
-        ![Sample Image]({image_url})
-
-        You can include **bold text**, *italic text*, and other Markdown features.
-
-        - Item 1
-        - Item 2
-        - Item 3
-        """
-        return {"markdown": markdown_content}
     except Exception as e:
         logging.error(f"An error occurred during the summary process: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred while summarizing the document: {str(e)}")
-
 
 setup_chat_histories()
 
@@ -98,18 +111,11 @@ async def chat_endpoint(chat_request: ChatRequest, token: str = Depends(oauth2_s
         "role": "user",
         "content": user_message
     }
+
     chat_history.append(user_entry)
 
     # Generate a dummy Markdown response
-    assistant_response = f"""
-# Assistant Response
-
-**You said:** {user_message}
-
-![Dummy Image]({DUMMY_IMAGE_URL})
-
-*This is a dummy response in Markdown.*
-    """.strip()
+    assistant_response =query_chat(chat_request.document_id, chat_request.message)
 
     assistant_entry = {
         "role": "assistant",
