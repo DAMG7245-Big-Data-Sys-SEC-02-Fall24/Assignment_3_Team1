@@ -13,7 +13,6 @@ from app.routes.helpers import ChatResponse, ChatRequest, load_chat_history, set
 from app.services import rag_service
 from app.services.database_service import get_db
 from app.services.auth_service import verify_token  # Assuming token validation is handled in auth_service
-from app.services.document_service import DocumentService  # Import the service layer
 import logging
 from fastapi.staticfiles import StaticFiles
 
@@ -67,6 +66,45 @@ async def summarize_endpoint(
         logging.error(f"An error occurred during the summary process: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred while summarizing the document: {str(e)}")
 
+@router.post("/report", tags=["Summary"])
+async def summarize_endpoint(
+        publication_id: int,
+        summary_request: Dict[str, str] = Body(...),
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db)
+):
+    """
+    Endpoint to summarize a document.
+    """
+    try:
+        # Verify the JWT token
+        user_email = verify_token(token)
+        if not user_email:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+        # Extract summary parameters from the request body
+        document_name = summary_request.get("document_name")
+        document_id = summary_request.get("document_id")
+
+        image_url = "http://localhost:8000/static/images/sample.jpg"
+
+        markdown_content = f"""
+        # Welcome to FastAPI Markdown
+
+        This is a sample Markdown content served from FastAPI.
+
+        ![Sample Image]({image_url})
+
+        You can include **bold text**, *italic text*, and other Markdown features.
+
+        - Item 1
+        - Item 2
+        - Item 3
+        """
+        return {"markdown": markdown_content}
+    except Exception as e:
+        logging.error(f"An error occurred during the summary process: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred while summarizing the document: {str(e)}")
 
 setup_chat_histories()
 
