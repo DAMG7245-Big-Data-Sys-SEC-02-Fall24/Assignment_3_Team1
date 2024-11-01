@@ -9,6 +9,7 @@ from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from llama_index.llms.nvidia import NVIDIA
 from sqlalchemy.orm import Session
 from app.routes import auth_routes, summary_routes, publications_routes
+from app.routes.helpers import markdown_to_pdf
 from app.services import rag_service
 from app.services.auth_service import verify_token
 from app.services.database_service import get_db
@@ -88,3 +89,4 @@ app.openapi = custom_openapi
 #
 # if __name__ == "__main__":
 #     main()
+
