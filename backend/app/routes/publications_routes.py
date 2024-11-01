@@ -39,29 +39,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return user_email
 
 
-# Route to create a new publication
-@router.post("/publications", tags=["Publications"])
-async def create_publication(
-        title: str = Body(...),
-        summary: str = Body(...),
-        image_url: str = Body(...),
-        pdf_url: str = Body(...),
-        token: str = Depends(oauth2_scheme),
-        publication_service: PublicationService = Depends(get_publication_service)
-):
-    """Create a new publication."""
-    try:
-        # Verify token
-        user_email = get_current_user(token)
-
-        # Create publication
-        publication_service.create_publication(title, summary, image_url, pdf_url)
-        return {"message": "Publication created successfully"}
-
-    except Exception as e:
-        logging.error(f"Error while creating publication: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error while creating publication")
-
 
 # Route to retrieve all publications with pagination
 @router.get("/publications", tags=["Publications"], response_model=PaginatedResponse)
@@ -108,59 +85,4 @@ async def get_publication_by_id(
         logging.error(f"Error while fetching publication: {str(e)}")
         raise HTTPException(status_code=500, detail="Error while fetching publication")
 
-
-# Route to update an existing publication
-@router.put("/publications/{publication_id}", tags=["Publications"])
-async def update_publication(
-        publication_id: int,
-        title: Optional[str] = Body(None),
-        summary: Optional[str] = Body(None),
-        image_url: Optional[str] = Body(None),
-        pdf_url: Optional[str] = Body(None),
-        token: str = Depends(oauth2_scheme),
-        publication_service: PublicationService = Depends(get_publication_service)
-):
-    """Update an existing publication by ID."""
-    try:
-        # Verify token
-        user_email = get_current_user(token)
-
-        # Fetch the publication to ensure it exists
-        publication = publication_service.get_publication_by_id(publication_id)
-        if not publication:
-            raise HTTPException(status_code=404, detail="Publication not found")
-
-        # Update the publication
-        publication_service.update_publication(publication_id, title, summary, image_url, pdf_url)
-        return {"message": "Publication updated successfully"}
-
-    except Exception as e:
-        logging.error(f"Error while updating publication: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error while updating publication")
-
-
-# Route to delete a publication by ID
-@router.delete("/publications/{publication_id}", tags=["Publications"])
-async def delete_publication(
-        publication_id: int,
-        token: str = Depends(oauth2_scheme),
-        publication_service: PublicationService = Depends(get_publication_service)
-):
-    """Delete a publication by ID."""
-    try:
-        # Verify token
-        user_email = get_current_user(token)
-
-        # Fetch the publication to ensure it exists
-        publication = publication_service.get_publication_by_id(publication_id)
-        if not publication:
-            raise HTTPException(status_code=404, detail="Publication not found")
-
-        # Delete the publication
-        publication_service.delete_publication(publication_id)
-        return {"message": "Publication deleted successfully"}
-
-    except Exception as e:
-        logging.error(f"Error while deleting publication: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error while deleting publication")
 

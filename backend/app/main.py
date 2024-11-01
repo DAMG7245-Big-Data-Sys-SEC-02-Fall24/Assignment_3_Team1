@@ -1,10 +1,16 @@
+import os
+
 import uvicorn
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.utils import get_openapi
+from llama_index.core.base.llms.types import ChatMessage, MessageRole
+from llama_index.llms.nvidia import NVIDIA
 from sqlalchemy.orm import Session
-from app.routes import auth_routes, summary_routes, rag, publications_routes
+from app.routes import auth_routes, summary_routes, publications_routes
+from app.routes.helpers import markdown_to_pdf
+from app.services import rag_service
 from app.services.auth_service import verify_token
 from app.services.database_service import get_db
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,7 +45,8 @@ app.include_router(summary_routes.router,tags=["Summary"])
 # app.include_router(rag.router, prefix="/rag", tags=["Rag"])
 
 app.include_router(publications_routes.router, prefix="", tags=["Publications"])
-
+# from fastapi.staticfiles import StaticFiles
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 # Root endpoint
 @app.get("/")
 def read_root():
@@ -84,9 +91,10 @@ def custom_openapi():
     return app.openapi_schema
 
 app.openapi = custom_openapi
-def main():
-    # Run the application using uvicorn programmatically
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+# def main():
+#     # Run the application using uvicorn programmatically
+#     uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+#
+# if __name__ == "__main__":
+#     main()
 
-if __name__ == "__main__":
-    main()
