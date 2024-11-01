@@ -10,7 +10,7 @@
   - **Backend (FastAPI)**: [Link to FastAPI Application](http://35.185.111.184:8000/docs)
   - **Data Processing Service (Airflow)**: [Link to Data Processing Service](http://35.185.111.184:8080)
 ---
-
+![Architecture Diagram](assets/A3_architecture%20diagram.jpeg)
 ## Introduction
 
 This project focuses on establishing a comprehensive multimodal Retrieval-Augmented Generation (RAG) pipeline, specifically for extracting, storing, and processing financial documents from the CFA Institute Research Foundation. The system is designed to efficiently handle various document formats and create a streamlined experience for querying and summarizing documents.
