@@ -1,4 +1,6 @@
+import json
 import os
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Body
 from fastapi.security import OAuth2PasswordBearer
@@ -9,15 +11,17 @@ from fastapi import FastAPI, HTTPException, Request, status
 
 from typing import List, Dict
 
-from app.routes.helpers import ChatResponse, ChatRequest, load_chat_history, setup_chat_histories, DUMMY_IMAGE_URL, \
-    save_chat_history, ChatHistoryResponse
-from app.services import d_rag_service
+from app import services
+from app.routes.helpers import ChatResponse, ChatRequest, load_chat_history, setup_chat_histories, \
+    save_chat_history, ChatHistoryResponse, markdown_to_pdf
+
 from app.services.database_service import get_db
 from app.services.auth_service import verify_token  # Assuming token validation is handled in auth_service
 import logging
 from fastapi.staticfiles import StaticFiles
 
 from app.services.rag_service import summarize_document, query_chat
+from app.services.tools import tools
 
 # Initialize the router for document routes
 router = APIRouter()
@@ -128,26 +132,50 @@ async def chat_endpoint(chat_request: ChatRequest, token: str = Depends(oauth2_s
 
     return ChatResponse(**assistant_entry)
 
+notes_dir = os.getcwd() + "/notes/assignment3/pdfs/"
+chat_histories_dir = os.getcwd() + "/chat_histories/assignment3/pdfs/"
+directory_path = Path(notes_dir)
+chat_path = Path(chat_histories_dir)
+from fastapi.responses import FileResponse
 
-@router.get("/chat/history", response_model=ChatHistoryResponse, status_code=status.HTTP_200_OK)
-async def get_chat_history_endpoint(document_id: str, token: str = Depends(oauth2_scheme)):
+@router.get("/list-files")
+async def list_files():
     """
-    Retrieve the entire chat history for a given document ID.
+    List all files in the specified directory.
     """
-    user_email = verify_token(token)
-    if not user_email:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    if not document_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="'document_id' query parameter is required."
-        )
+    if not chat_path.is_dir():
+        raise HTTPException(status_code=404, detail="Directory not found")
 
-    chat_history = load_chat_history(document_id)
-    if not chat_history:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No chat history found for document_id: {document_id}"
-        )
+    # Get all file names in the directory
 
-    return ChatHistoryResponse(document_id=document_id, messages=chat_history)
+    files = [file.stem.replace("_chat", "") for file in chat_path.iterdir() if file.is_file()]
+
+    return {"files": files}
+def read_json(file_path: str) -> str:
+    """Reads a JSON file and returns its content."""
+    try:
+        with open(file_path, 'r') as file:
+            return json.dumps(json.load(file))
+    except Exception as e:
+        return f"Error reading JSON file: {str(e)}"
+
+@router.post("/download-file")
+async def download_file(request:dict):
+    """
+    Download a specified PDF file.
+    """
+    # json_file =
+    logging.info(f"Downloading file: {request["filename"]}")
+    json_file = chat_histories_dir + request["filename"] + "_chat.json"
+    print(json_file)
+    json_extract = read_json(json_file)
+    query = "-----Below is a chat history of the document. I want you to create a well formatted markdown of this. Dont repeat any questions if occuring twice-----\n" + json_extract
+    assistant_response = query_chat("assignment3/pdfs/" + request['filename'], query)
+    print(assistant_response)
+    markdown_to_pdf(assistant_response, notes_dir +  request['filename'])
+    file_path = Path(notes_dir + request["filename"] + ".pdf")
+    # Check if file exists and is a PDF
+    if not file_path.exists() or not file_path.is_file() or file_path.suffix.lower() != '.pdf':
+        raise HTTPException(status_code=404, detail="File not found or not a PDF")
+
+    return FileResponse(path=file_path, filename=request["filename"], media_type='application/pdf')

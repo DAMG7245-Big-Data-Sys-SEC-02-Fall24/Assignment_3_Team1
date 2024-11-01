@@ -11,7 +11,6 @@ def setup_chat_histories():
     if not os.path.exists(CHAT_HISTORY_DIR):
         os.makedirs(CHAT_HISTORY_DIR)
 CHAT_HISTORY_DIR = "chat_histories"
-DUMMY_IMAGE_URL = "http://localhost:8000/static/images/sample.jpg"
 
 
 
@@ -115,3 +114,46 @@ def save_chat_history(document_id: str, messages: List[dict]):
     }
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+from markdown2 import Markdown
+from weasyprint import HTML
+import os
+
+
+def markdown_to_pdf(markdown_content, output_filename):
+    # Convert Markdown to HTML
+
+
+    markdowner = Markdown()
+    html_content = markdowner.convert(markdown_content)
+    logging.info(f"Converted Markdown to HTML:\n{html_content}")
+    # Wrap the HTML content in a basic HTML structure
+    full_html = f"""
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            h1, h2, h3 {{ color: #333; }}
+            code {{ background-color: #f0f0f0; padding: 2px 4px; border-radius: 4px; }}
+        </style>
+    </head>
+    <body>
+        {html_content}
+    </body>
+    </html>
+    """
+
+    # Create a PDF from the HTML
+    html = HTML(string=full_html)
+    pdf_file = html.write_pdf()
+    output_filename = output_filename
+    # Save the PDF file
+    with open(output_filename, 'wb') as f:
+        f.write(pdf_file)
+
+    # Return the absolute path of the saved PDF
+    p = os.path.abspath(output_filename)
+    logging.info(f"PDF saved to: {p}")
+    return p
