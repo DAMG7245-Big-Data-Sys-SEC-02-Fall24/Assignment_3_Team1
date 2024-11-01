@@ -61,7 +61,7 @@ The project's primary objective is to develop an automated pipeline to ingest, p
 - **RAG Application**:
   - Use PyMuPDF for document summarization and querying in QA.
   - Integrate Llama Parse framework for robust report generation.
-  - 
+![Backend API](assets/Backend%20API.jpeg)
 
 #### Frontend (Streamlit)
 
