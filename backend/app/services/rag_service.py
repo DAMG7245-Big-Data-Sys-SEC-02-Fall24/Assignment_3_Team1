@@ -124,7 +124,8 @@ async def generate_structured_report_async(parsed_data: List[dict]):
 
 # Synchronous wrapper to run the async function in a blocking manner
 def generate_structured_report(parsed_data: List[dict]):
-    return asyncio.run(generate_structured_report_async(parsed_data))
+    # return asyncio.run(generate_structured_report_async(parsed_data))
+    return []
 
 
 def setup_pinecone_index(pc, index_name: str, embedding_dimension: int) -> pinecone.Index:
