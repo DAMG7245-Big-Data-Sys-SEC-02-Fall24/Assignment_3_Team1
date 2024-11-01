@@ -41,6 +41,7 @@ nest-asyncio = "^1.6.0"
 jupyter = "^1.1.1"
 aiostream = "^0.6.4"
 pymilvus = "^2.4.9"
+boto3 = "^1.35.52"
 
 
 

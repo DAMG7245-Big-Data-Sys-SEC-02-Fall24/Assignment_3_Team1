@@ -133,8 +133,6 @@ backend/.idea/modules.xml
 backend/.idea/vcs.xml
 backend/.idea/workspace.xml
 backend/.idea/inspectionProfiles/profiles_settings.xml
-backend/.idea/inspectionProfiles/Project_Default.xml
-.DS_Store
-
- 
+backend/.idea/inspectionProfiles/Project_Default.xml 
 secrets/
+*/.DS_Store
