@@ -456,9 +456,7 @@ Here is the complete directory structure of the project:
   Defines the SQL schema for the PostgreSQL database, including the Users table for authentication.
 
 ## Architecture Diagram
-
-![Architecture Diagram](assets/airflow_architecture_diagram.png)
-![High Level Diagram](assets/high_level_architecture_diagram_1.png)
+![Architecture Diagram](assets/A3_architecture%20diagram.jpeg)
 
 ### Description of Components:
 - **Airflow**: Orchestrates the ETL pipeline for extracting PDF text and storing it in MongoDB.
